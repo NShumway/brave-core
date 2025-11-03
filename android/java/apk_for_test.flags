@@ -941,6 +941,7 @@
     *** mMinimizationManagerHolder;
     *** getAppHeaderCoordinator(...);
     *** getBrowserServicesThemeColorProvider(...);
+    *** getClientPackageNameProvider(...);
     public <init>(...);
 }
 
