@@ -46,11 +46,9 @@ class BraveSidePanel : public views::View,
   enum class HorizontalAlignment { kLeft = 0, kRight };
 
   // Same signature as chromium SidePanel
-  explicit BraveSidePanel(
-      BrowserView* browser_view,
-      SidePanelEntry::PanelType type,
-      bool has_border,
-      HorizontalAlignment horizontal_alignment = HorizontalAlignment::kLeft);
+  explicit BraveSidePanel(BrowserView* browser_view,
+                          SidePanelEntry::PanelType type,
+                          bool has_border);
   BraveSidePanel(const BraveSidePanel&) = delete;
   BraveSidePanel& operator=(const BraveSidePanel&) = delete;
   ~BraveSidePanel() override;
@@ -64,8 +62,7 @@ class BraveSidePanel : public views::View,
   bool ShouldRestrictMaxWidth() const;
   double GetAnimationValue() const;
   void SetHorizontalAlignment(HorizontalAlignment alignment);
-  HorizontalAlignment GetHorizontalAlignment();
-  bool IsRightAligned();
+  bool IsRightAligned() const;
   gfx::Size GetContentSizeUpperBound() const { return gfx::Size(); }
   bool IsClosing();
   void DisableAnimationsForTesting() {}
@@ -73,6 +70,9 @@ class BraveSidePanel : public views::View,
   void RemoveHeaderView();
   void SetHeaderVisibility(bool visible);
   void SetOutlineVisibility(bool visible);
+  HorizontalAlignment horizontal_alignment() const {
+    return horizontal_alignment_;
+  }
 
   // Only used by tests.
   template <typename T>
@@ -136,7 +136,7 @@ class BraveSidePanel : public views::View,
   base::ScopedMultiSourceObservation<View, ViewObserver> scoped_observation_{
       this};
 
-  HorizontalAlignment horizontal_alignment_ = HorizontalAlignment::kLeft;
+  HorizontalAlignment horizontal_alignment_;
   std::optional<int> starting_width_on_resize_;
 
   // If this is set, use this width for panel contents during the layout
