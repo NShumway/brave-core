@@ -28,6 +28,8 @@ import org.chromium.base.IntentUtils;
 import org.chromium.build.annotations.NullMarked;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.tab.NoPullToRefreshSwipeRefreshHandler;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.util.ColorUtils;
 
@@ -38,6 +40,10 @@ public class BraveAccountCustomTabActivity extends CustomTabActivity {
     @Override
     public void performPostInflationStartup() {
         super.performPostInflationStartup();
+
+        Tab tab = getActivityTab();
+        assert tab != null;
+        NoPullToRefreshSwipeRefreshHandler.from(tab);
 
         // Hide the toolbar container
         View toolbarContainer = findViewById(R.id.toolbar_container);
