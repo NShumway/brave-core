@@ -1193,7 +1193,6 @@ export const transactionEndpoints = ({
                 }),
               )
               store.dispatch(PanelActions.navigateTo('transactionStatus'))
-              apiProxy.panelHandler?.setCloseOnDeactivate(true)
               return {
                 data: { success: true },
               }
@@ -1256,7 +1255,6 @@ export const transactionEndpoints = ({
                 }),
               )
               store.dispatch(PanelActions.navigateTo('transactionStatus'))
-              apiProxy.panelHandler?.setCloseOnDeactivate(true)
               // By default the focus is moved to the browser window
               // automatically when Trezor popup closed which triggers
               // an OnDeactivate event that would close the wallet panel

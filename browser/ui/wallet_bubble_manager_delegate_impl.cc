@@ -15,7 +15,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "brave/browser/brave_wallet/brave_wallet_context_utils.h"
 #include "brave/browser/ui/views/frame/brave_browser_view.h"
-#include "brave/browser/ui/views/wallet_bubble_focus_observer.h"
 #include "brave/browser/ui/webui/brave_wallet/wallet_common_ui.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,7 +42,11 @@ class WalletWebUIBubbleDialogView : public WebUIBubbleDialogView {
       : WebUIBubbleDialogView(anchor_view,
                               contents_wrapper->GetWeakPtr(),
                               anchor_rect,
-                              arrow) {}
+                              arrow) {
+    CHECK(anchor_widget());
+    anchor_widget_observation_.Observe(
+        anchor_widget()->GetPrimaryWindowWidget());
+  }
   WalletWebUIBubbleDialogView(const WalletWebUIBubbleDialogView&) = delete;
   WalletWebUIBubbleDialogView& operator=(const WalletWebUIBubbleDialogView&) =
       delete;
@@ -55,6 +58,21 @@ class WalletWebUIBubbleDialogView : public WebUIBubbleDialogView {
     FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
                                      params);
   }
+
+ private:
+  void OnWidgetTreeActivated(views::Widget* root_widget,
+                             views::Widget* active_widget) override {
+    if (!GetWidget()->IsVisible()) {
+      return;
+    }
+
+    if (active_widget != GetWidget()) {
+      GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+    }
+  }
+
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      anchor_widget_observation_{this};
 };
 
 BEGIN_METADATA(WalletWebUIBubbleDialogView)
@@ -93,13 +111,12 @@ class WalletWebUIBubbleManager : public WebUIBubbleManagerImpl<WalletPanelUI>,
     auto bubble_view = std::make_unique<WalletWebUIBubbleDialogView>(
         anchor_view_, contents_wrapper, anchor, arrow);
     bubble_view_ = bubble_view->GetWeakPtr();
+    bubble_view_->set_close_on_deactivate(false);
     auto* widget =
         views::BubbleDialogDelegateView::CreateBubble(std::move(bubble_view));
     CHECK(widget);
     widget->SetZOrderLevel(ui::ZOrderLevel::kSecuritySurface);
 
-    brave_observer_ =
-        WalletBubbleFocusObserver::CreateForView(bubble_view_.get(), browser_);
     // Checking if we create WalletPanelUI instance of WebUI and
     // extracting WebUIContentsWrapper class to pass real browser delegate
     // into it to redirect popups to be opened as separate windows.
@@ -120,14 +137,6 @@ class WalletWebUIBubbleManager : public WebUIBubbleManagerImpl<WalletPanelUI>,
     // Set Browser delegate to redirect popups to be opened as Popup window
     contents_wrapper->SetWebContentsAddNewContentsDelegate(
         browser_->AsWeakPtr());
-    // Pass deactivation callback for wallet panel api calls
-    // The bubble disappears by default when Trezor opens a popup window
-    // from the wallet panel bubble. In order to prevent it we set a callback
-    // to modify panel deactivation flag from api calls in SetCloseOnDeactivate
-    // inside wallet_panel_handler.cc when necessary.
-    wallet_panel->SetDeactivationCallback(
-        base::BindRepeating(&WalletWebUIBubbleManager::SetCloseOnDeactivate,
-                            weak_factory_.GetWeakPtr()));
 
     return bubble_view_;
   }
@@ -137,7 +146,6 @@ class WalletWebUIBubbleManager : public WebUIBubbleManagerImpl<WalletPanelUI>,
     if (!contents_wrapper) {
       return;
     }
-    brave_observer_.reset();
     for (auto tab_id : contents_wrapper->popup_ids()) {
       Browser* popup_browser = nullptr;
       content::WebContents* popup_contents =
@@ -165,15 +173,6 @@ class WalletWebUIBubbleManager : public WebUIBubbleManagerImpl<WalletPanelUI>,
     WebUIBubbleManagerImpl::OnWidgetDestroying(widget);
   }
 
-  void SetCloseOnDeactivate(bool close) {
-    if (bubble_view_) {
-      bubble_view_->set_close_on_deactivate(close);
-      if (brave_observer_) {
-        brave_observer_->UpdateBubbleDeactivationState(close);
-      }
-    }
-  }
-
   content::WebContents* GetWebContentsForTesting() {
     if (!bubble_view_) {
       return nullptr;
@@ -184,7 +183,6 @@ class WalletWebUIBubbleManager : public WebUIBubbleManagerImpl<WalletPanelUI>,
  private:
   const raw_ptr<Browser> browser_;
   const raw_ptr<views::View> anchor_view_;
-  std::unique_ptr<WalletBubbleFocusObserver> brave_observer_;
   base::WeakPtr<WebUIBubbleDialogView> bubble_view_ = nullptr;
   base::WeakPtrFactory<WalletWebUIBubbleManager> weak_factory_{this};
 };
@@ -233,10 +231,6 @@ void WalletBubbleManagerDelegateImpl::ShowBubble() {
   }
 
   webui_bubble_manager_->ShowBubble();
-}
-
-void WalletBubbleManagerDelegateImpl::CloseOnDeactivate(bool close) {
-  webui_bubble_manager_->SetCloseOnDeactivate(close);
 }
 
 content::WebContents*

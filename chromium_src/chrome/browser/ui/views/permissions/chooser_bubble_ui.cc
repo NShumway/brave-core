@@ -20,80 +20,6 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
-namespace {
-
-bool IsBravePanel(content::WebContents* content) {
-  return content->GetVisibleURL().EqualsIgnoringRef(
-      GURL(kBraveUIWalletPanelURL));
-}
-
-void OnWindowClosing(views::Widget* anchor_widget) {
-  if (!anchor_widget) {
-    return;
-  }
-  Browser* browser =
-      chrome::FindBrowserWithWindow(anchor_widget->GetNativeWindow());
-  if (!browser || !browser->tab_strip_model()) {
-    return;
-  }
-  content::WebContents* active =
-      browser->tab_strip_model()->GetActiveWebContents();
-  if (!active) {
-    return;
-  }
-  auto* tab_helper =
-      brave_wallet::BraveWalletTabHelper::FromWebContents(active);
-  if (tab_helper) {
-    tab_helper->SetCloseOnDeactivate(true);
-  }
-}
-
-}  // namespace
-
-namespace views {
-class BraveBubbleDialogDelegateView : public views::BubbleDialogDelegateView {
- public:
-  BraveBubbleDialogDelegateView() : BubbleDialogDelegateView() {}
-
-  static views::Widget* CreateBubble(
-      std::unique_ptr<BubbleDialogDelegateView> delegate) {
-    if (delegate) {
-      delegate->RegisterWindowClosingCallback(
-          base::BindOnce(&OnWindowClosing, delegate->anchor_widget()));
-    }
-    return BubbleDialogDelegateView::CreateBubble(std::move(delegate));
-  }
-};
-
-}  // namespace views
-
-namespace chrome {
-
-Browser* FindBrowserAndAdjustBubbleForBraveWalletPanel(
-    content::WebContents* contents) {
-  if (!IsBravePanel(contents))
-    return chrome::FindBrowserWithTab(contents);
-
-  Browser* browser = chrome::FindBrowserWithProfile(
-      Profile::FromBrowserContext(contents->GetBrowserContext()));
-  content::WebContents* active =
-      browser->tab_strip_model()->GetActiveWebContents();
-  auto* tab_helper =
-      brave_wallet::BraveWalletTabHelper::FromWebContents(active);
-  if (tab_helper)
-    tab_helper->SetCloseOnDeactivate(false);
-  return browser;
-}
-
-}  // namespace chrome
-
-#define FindBrowserWithTab FindBrowserAndAdjustBubbleForBraveWalletPanel
-#define GetActiveWebContents                           \
-  GetActiveWebContents() && !IsBravePanel(contents) && \
-      browser->tab_strip_model()->GetActiveWebContents
-
-#define BubbleDialogDelegateView BraveBubbleDialogDelegateView
-
 #define SetExtraView(...)    \
   SetExtraView(__VA_ARGS__); \
   SetFootnoteView(device_chooser_content_view_->CreateFootnoteView(browser))
@@ -101,6 +27,3 @@ Browser* FindBrowserAndAdjustBubbleForBraveWalletPanel(
 #include <chrome/browser/ui/views/permissions/chooser_bubble_ui.cc>
 
 #undef SetExtraView
-#undef BubbleDialogDelegateView
-#undef GetActiveWebContents
-#undef FindBrowserWithTab

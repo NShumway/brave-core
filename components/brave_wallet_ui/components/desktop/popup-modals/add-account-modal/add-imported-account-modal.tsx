@@ -5,7 +5,6 @@
 
 import { assert, assertNotReached } from 'chrome://resources/js/assert.js'
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
 import { useHistory, useParams } from 'react-router'
 import Input, { InputEventDetail } from '@brave/leo/react/input'
 import Dropdown from '@brave/leo/react/dropdown'
@@ -28,9 +27,6 @@ import {
   WalletRoutes,
   DAppSupportedCoinTypes,
 } from '../../../../constants/types'
-
-// actions
-import { PanelActions } from '../../../../panel/actions'
 
 // components
 import { DividerLine } from '../../../extension/divider/index'
@@ -101,7 +97,6 @@ export const ImportAccountModal = () => {
   const { accountTypeName } = useParams<Params>()
 
   // redux
-  const dispatch = useDispatch()
   const isBitcoinImportEnabled = useSafeWalletSelector(
     WalletSelectors.isBitcoinImportEnabled,
   )
@@ -193,7 +188,6 @@ export const ImportAccountModal = () => {
   const onClickFileUpload = () => {
     // To prevent panel from being closed when file chooser is open
     if (isPanel) {
-      dispatch(PanelActions.setCloseOnDeactivate(false))
       // For resume close on deactive when file chooser is close(select/cancel)
       window.addEventListener('focus', onFocusFileUpload)
     }
@@ -201,7 +195,6 @@ export const ImportAccountModal = () => {
 
   const onFocusFileUpload = () => {
     if (isPanel) {
-      dispatch(PanelActions.setCloseOnDeactivate(true))
       window.removeEventListener('focus', onFocusFileUpload)
     }
   }

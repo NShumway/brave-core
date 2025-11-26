@@ -51,8 +51,6 @@ export function navigateToConnectHardwareWallet(
   panelHandler: BraveWallet.PanelHandlerRemote,
   store: Pick<Store, 'dispatch' | 'getState'>,
 ) {
-  panelHandler.setCloseOnDeactivate(false)
-
   const selectedPanel: string | undefined =
     store.getState()?.panel?.selectedPanel
 
