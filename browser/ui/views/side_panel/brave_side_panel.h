@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_animation_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_animation_ids.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -117,6 +118,8 @@ class BraveSidePanel : public views::View,
   // This method is the shared implementation of Open/Close.
   void UpdateVisibility(bool should_be_open);
 
+  void UpdateHorizontalAlignment();
+
   // views::ViewObserver:
   void OnChildViewAdded(View* observed_view, View* child) override;
   void OnChildViewRemoved(View* observed_view, View* child) override;
@@ -148,14 +151,19 @@ class BraveSidePanel : public views::View,
   IntegerPrefMember side_panel_width_;
   std::unique_ptr<SidePanelResizeWidget> resize_widget_;
   std::unique_ptr<ViewShadow> shadow_;
-  // Owned by `this` indirectly through the views tree.
-  raw_ptr<views::View> content_parent_view_;
-  State state_ = State::kClosed;
 
   // The animation coordinator for the side panel. This controls all of the
   // animations that are tied to the side panel when triggering the show and
   // hide states.
   std::unique_ptr<SidePanelAnimationCoordinator> animation_coordinator_;
+
+  // Observes and listens to side panel alignment changes.
+  PrefChangeRegistrar pref_change_registrar_;
+
+  // Owned by `this` indirectly through the views tree.
+  raw_ptr<views::View> content_parent_view_;
+
+  State state_ = State::kClosed;
 };
 
 // Alias to the original `SidePanel` to the benefit of upstream code, as

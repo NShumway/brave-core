@@ -103,6 +103,13 @@ BraveSidePanel::BraveSidePanel(BrowserView* browser_view,
   content_parent_view_ = AddChildView(std::make_unique<ContentParentView>());
   content_parent_view_->SetVisible(false);
 
+  pref_change_registrar_.Init(browser_view->GetProfile()->GetPrefs());
+
+  pref_change_registrar_.Add(
+      prefs::kSidePanelHorizontalAlignment,
+      base::BindRepeating(&BraveSidePanel::UpdateHorizontalAlignment,
+                          base::Unretained(this)));
+
   animation_coordinator_ =
       std::make_unique<SidePanelAnimationCoordinator>(this);
   animation_coordinator_->AddObserver(kSidePanelBoundsAnimation, this);
@@ -286,6 +293,13 @@ void BraveSidePanel::Close(bool animated) {
 void BraveSidePanel::UpdateVisibility(bool should_be_open) {
   state_ = should_be_open ? State::kOpen : State::kClosed;
   SetVisible(should_be_open);
+}
+
+void BraveSidePanel::UpdateHorizontalAlignment() {
+  horizontal_alignment_ =
+      GetHorizontalAlignment(browser_view_->GetProfile()->GetPrefs(), type_);
+
+  InvalidateLayout();
 }
 
 views::View* BraveSidePanel::GetContentParentView() {
