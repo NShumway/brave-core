@@ -19,9 +19,8 @@ public class NoPullToRefreshSwipeRefreshHandler extends TabWebContentsUserData
     private static final Class<NoPullToRefreshSwipeRefreshHandler> USER_DATA_KEY =
             NoPullToRefreshSwipeRefreshHandler.class;
 
-    private final Tab mTab;
     private final SwipeRefreshHandler mDelegate;
-    private boolean mHandlingPullToRefresh;
+    private boolean mIgnorePullToRefresh;
 
     public static NoPullToRefreshSwipeRefreshHandler from(Tab tab) {
         NoPullToRefreshSwipeRefreshHandler handler = get(tab);
@@ -35,28 +34,23 @@ public class NoPullToRefreshSwipeRefreshHandler extends TabWebContentsUserData
     }
 
     public static @Nullable NoPullToRefreshSwipeRefreshHandler get(Tab tab) {
-        assert tab != null;
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
     private NoPullToRefreshSwipeRefreshHandler(Tab tab) {
         super(tab);
 
-        assert tab != null;
-        mTab = tab;
-
-        SwipeRefreshHandler delegate = SwipeRefreshHandler.get(mTab);
+        SwipeRefreshHandler delegate = SwipeRefreshHandler.get(tab);
         assert delegate != null;
         mDelegate = delegate;
+    }
 
-        WebContents webContents = tab.getWebContents();
-        assert webContents != null;
-        initWebContents(webContents);
+    public void setIgnorePullToRefresh(boolean ignorePullToRefresh) {
+        mIgnorePullToRefresh = ignorePullToRefresh;
     }
 
     @Override
     public void initWebContents(WebContents webContents) {
-        assert webContents != null;
         webContents.setOverscrollRefreshHandler(this);
     }
 
@@ -66,28 +60,26 @@ public class NoPullToRefreshSwipeRefreshHandler extends TabWebContentsUserData
     @Override
     public boolean start(
             @OverscrollAction int type, @BackGestureEventSwipeEdge int initiatingEdge) {
-        mHandlingPullToRefresh = type == OverscrollAction.PULL_TO_REFRESH;
-        return mHandlingPullToRefresh || mDelegate.start(type, initiatingEdge);
+        return mDelegate.start(
+                type == OverscrollAction.PULL_TO_REFRESH && mIgnorePullToRefresh
+                        ? OverscrollAction.NONE
+                        : type,
+                initiatingEdge);
     }
 
     @Override
     public void pull(float xDelta, float yDelta) {
-        if (!mHandlingPullToRefresh) {
-            mDelegate.pull(xDelta, yDelta);
-        }
+        mDelegate.pull(xDelta, yDelta);
     }
 
     @Override
     public void release(boolean allowRefresh) {
-        if (!mHandlingPullToRefresh) {
-            mDelegate.release(allowRefresh);
-        }
+        mDelegate.release(allowRefresh);
     }
 
     @Override
     public void reset() {
         mDelegate.reset();
-        mHandlingPullToRefresh = false;
     }
 
     @Override

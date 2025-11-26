@@ -1,0 +1,12 @@
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/tab/TabHelpers.java b/chrome/android/java/src/org/chromium/chrome/browser/tab/TabHelpers.java
+index 375497b279d88b9aec5364d133510f022ed591f7..b83c75661f04e53fccbadc764930434ca16fc87a 100644
+--- a/chrome/android/java/src/org/chromium/chrome/browser/tab/TabHelpers.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/tab/TabHelpers.java
+@@ -70,6 +70,7 @@ public final class TabHelpers {
+         TrustedCdn.from(tab);
+         TabAssociatedApp.from(tab);
+         TabGestureStateListener.from(tab);
++        NoPullToRefreshSwipeRefreshHandler.from(tab);
+ 
+         // Initialize the display cutout helper if the tab is eligible for drawing edge to edge.
+         if (!tab.isCustomTab()
