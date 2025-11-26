@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
-index 60b586992143faa7ea9876d2e66106123ad29c47..7547dd559b7047ece6c543f0c268c0f40f00b8fb 100644
+index 28f9bc3e7ece5b997a8b6341c330a8c6d59f1be1..1b296661ff438c8732e62f5f0a7a86b0446d82d7 100644
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -780,6 +780,7 @@ static_library("ui") {
+@@ -782,6 +782,7 @@ static_library("ui") {
      # gets componentized.
      "//chrome/browser/ui/extensions:impl",
    ]
@@ -10,7 +10,7 @@ index 60b586992143faa7ea9876d2e66106123ad29c47..7547dd559b7047ece6c543f0c268c0f4
  
    if (enable_vr && is_win) {
      deps += [ "//chrome/browser/vr:vr_base" ]
-@@ -3327,7 +3328,10 @@ static_library("ui") {
+@@ -3338,7 +3339,10 @@ static_library("ui") {
          "//chrome/updater/app/server/win:updater_legacy_idl",
        ]
      } else {
@@ -22,7 +22,7 @@ index 60b586992143faa7ea9876d2e66106123ad29c47..7547dd559b7047ece6c543f0c268c0f4
      }
    }
  
-@@ -5457,6 +5461,7 @@ static_library("ui_public_dependencies") {
+@@ -5490,6 +5494,7 @@ static_library("ui_public_dependencies") {
    if (enable_extensions_core) {
      public_deps += [ "//extensions/browser" ]
    }
@@ -30,7 +30,7 @@ index 60b586992143faa7ea9876d2e66106123ad29c47..7547dd559b7047ece6c543f0c268c0f4
    if (!is_android) {
      public_deps += [
        "//build:branding_buildflags",
-@@ -5580,6 +5585,7 @@ source_set("browser_navigator_params_headers") {
+@@ -5613,6 +5618,7 @@ source_set("browser_navigator_params_headers") {
      "//url",
    ]
    deps = []

@@ -1,8 +1,8 @@
 diff --git a/ios/chrome/app/BUILD.gn b/ios/chrome/app/BUILD.gn
-index 3c40ff9ded5a2d6e4a2b82a43e5815b0c207bd05..cbf6d5c740162b61bb6fdd73ab048cf6c1218b1b 100644
+index c0d4b4785da98c4d6e189744bfbb776145c34f4d..25728b22e12c89df5531dddd4acc2dde34128cae 100644
 --- a/ios/chrome/app/BUILD.gn
 +++ b/ios/chrome/app/BUILD.gn
-@@ -807,8 +807,7 @@ chrome_app("chrome") {
+@@ -808,8 +808,7 @@ chrome_app("chrome") {
    # (see https://crbug.com/1394553 for details of the build failure). This
    # is a stop-gap solution.
    if (target_environment == "catalyst" ||
