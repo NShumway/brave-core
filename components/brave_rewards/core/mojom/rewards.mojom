@@ -350,6 +350,7 @@ enum Environment {
   kDevelopment = 2
 };
 
+[EnableIf=enable_brave_wallet]
 struct SolanaAccountBalance {
   string amount;
   uint8 decimals;

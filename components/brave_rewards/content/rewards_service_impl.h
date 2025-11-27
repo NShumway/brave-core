@@ -320,10 +320,12 @@ class RewardsServiceImpl final : public RewardsService,
   void OnReconcileComplete(mojom::Result result,
                            mojom::ContributionInfoPtr contribution) override;
   void LoadURL(mojom::UrlRequestPtr request, LoadURLCallback callback) override;
+#if BUILDFLAG(ENABLE_BRAVE_WALLET)
   void GetSPLTokenAccountBalance(
       const std::string& solana_address,
       const std::string& token_mint_address,
       GetSPLTokenAccountBalanceCallback callback) override;
+#endif
   void SetPublisherMinVisits(int visits) const override;
   void OnPanelPublisherInfo(mojom::Result result,
                             mojom::PublisherInfoPtr info,

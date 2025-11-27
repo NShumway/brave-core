@@ -6,6 +6,7 @@
 import("//third_party/protobuf/proto_library.gni")
 
 import("//brave/components/brave_rewards/core/engine/config.gni")
+import("//brave/components/brave_wallet/common/buildflags/buildflags.gni")
 import("//build/buildflag_header.gni")
 
 if (is_android) {
@@ -382,8 +383,6 @@ static_library("engine") {
     "wallet_provider/gemini/gemini_transfer.h",
     "wallet_provider/linkage_checker.cc",
     "wallet_provider/linkage_checker.h",
-    "wallet_provider/solana/solana_wallet_provider.cc",
-    "wallet_provider/solana/solana_wallet_provider.h",
     "wallet_provider/transfer.cc",
     "wallet_provider/transfer.h",
     "wallet_provider/uphold/connect_uphold_wallet.cc",
@@ -405,6 +404,7 @@ static_library("engine") {
     "//brave/components/brave_rewards/core",
     "//brave/components/brave_rewards/core:features",
     "//brave/components/brave_rewards/core/mojom:engine",
+    "//brave/components/brave_wallet/common/buildflags",
     "//brave/components/challenge_bypass_ristretto",
     "//brave/third_party/bip39wally-core-native:bip39wally-core",
     "//brave/vendor/bat-native-tweetnacl:tweetnacl",
@@ -424,4 +424,11 @@ static_library("engine") {
     ":buildflags",
     ":headers",
   ]
+
+  if (enable_brave_wallet) {
+    sources += [
+      "wallet_provider/solana/solana_wallet_provider.cc",
+      "wallet_provider/solana/solana_wallet_provider.h",
+    ]
+  }
 }

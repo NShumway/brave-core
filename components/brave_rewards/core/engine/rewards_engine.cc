@@ -27,9 +27,13 @@
 #include "brave/components/brave_rewards/core/engine/util/time_util.h"
 #include "brave/components/brave_rewards/core/engine/util/url_loader.h"
 #include "brave/components/brave_rewards/core/engine/wallet/wallet.h"
-#include "brave/components/brave_rewards/core/engine/wallet_provider/solana/solana_wallet_provider.h"
 #include "brave/components/brave_rewards/core/engine/wallet_provider/wallet_provider.h"
 #include "brave/components/brave_rewards/core/engine/zebpay/zebpay.h"
+#include "brave/components/brave_wallet/common/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_BRAVE_WALLET)
+#include "brave/components/brave_rewards/core/engine/wallet_provider/solana/solana_wallet_provider.h"
+#endif
 
 namespace brave_rewards::internal {
 
@@ -470,9 +474,11 @@ wallet_provider::WalletProvider* RewardsEngine::GetExternalWalletProvider(
   if (wallet_type == constant::kWalletZebPay) {
     return zebpay_.get();
   }
+#if BUILDFLAG(ENABLE_BRAVE_WALLET)
   if (wallet_type == constant::kWalletSolana) {
     return &Get<SolanaWalletProvider>();
   }
+#endif
   return nullptr;
 }
 

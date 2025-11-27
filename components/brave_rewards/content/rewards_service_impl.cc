@@ -843,11 +843,11 @@ void RewardsServiceImpl::OnURLLoaderComplete(
   std::move(callback).Run(std::move(response));
 }
 
+#if BUILDFLAG(ENABLE_BRAVE_WALLET)
 void RewardsServiceImpl::GetSPLTokenAccountBalance(
     const std::string& solana_address,
     const std::string& token_mint_address,
     GetSPLTokenAccountBalanceCallback callback) {
-#if BUILDFLAG(ENABLE_BRAVE_WALLET)
   if (!brave_wallet_service_) {
     std::move(callback).Run(nullptr);
     return;
@@ -857,10 +857,8 @@ void RewardsServiceImpl::GetSPLTokenAccountBalance(
       solana_address, token_mint_address, brave_wallet::mojom::kSolanaMainnet,
       base::BindOnce(&RewardsServiceImpl::OnGetSPLTokenAccountBalance,
                      AsWeakPtr(), std::move(callback)));
-#else
-  std::move(callback).Run(nullptr);
-#endif
 }
+#endif
 
 #if BUILDFLAG(ENABLE_BRAVE_WALLET)
 void RewardsServiceImpl::OnGetSPLTokenAccountBalance(

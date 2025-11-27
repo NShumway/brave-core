@@ -129,6 +129,8 @@ interface RewardsEngineClient {
 
   LoadURL(UrlRequest request) => (UrlResponse response);
 
+  // Required for Web3 publisher support (Solana addresses)
+  [EnableIf=enable_brave_wallet]
   GetSPLTokenAccountBalance(
       string solana_address,
       string token_mint_address) => (SolanaAccountBalance? balance);
