@@ -4,9 +4,12 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <memory>
+#include <string>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/thread_test_helper.h"
@@ -25,7 +28,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/search_terms_data.h"
+#include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -69,20 +75,9 @@ constexpr char kBackupSearchContent[] =
 
 constexpr char kScriptDefaultAPIExists[] =
     "!!(window.brave && window.brave.getCanSetDefaultSearchProvider)";
-// Use setTimeout to allow opensearch xml to be fetched
-// and template url created.
-// If this is flakey, consider making TemplateURL manually,
-// or observing the TemplateURLService for changes.
-constexpr char kScriptDefaultAPIGetValue[] = R"(
-  new Promise(resolve => {
-    setTimeout(function () {
-    brave.getCanSetDefaultSearchProvider()
-    .then((canSet) => {
-      resolve(canSet)
-    })
-    }, 1200)
-  });
-)";
+// Simple script to get the value.
+constexpr char kScriptDefaultAPIGetValue[] =
+    "brave.getCanSetDefaultSearchProvider()";
 
 std::string GetChromeFetchBackupResultsAvailScript() {
   return absl::StrFormat(R"(
@@ -103,6 +98,46 @@ std::string GetChromeFetchBackupResultsAvailScript() {
 std::string GetCookieFromJS(content::RenderFrameHost* frame) {
   return EvalJs(frame, "document.cookie;").ExtractString();
 }
+
+// Helper class that waits for a TemplateURL to be added for a specific host.
+class TemplateURLServiceHostObserver : public TemplateURLServiceObserver {
+ public:
+  TemplateURLServiceHostObserver(TemplateURLService* service,
+                                 std::string_view host)
+      : service_(service), host_(host) {
+    service_->AddObserver(this);
+  }
+
+  ~TemplateURLServiceHostObserver() override { service_->RemoveObserver(this); }
+
+  void Wait() {
+    if (HasTemplateURLForHost()) {
+      return;
+    }
+    run_loop_.Run();
+  }
+
+ private:
+  bool HasTemplateURLForHost() {
+    for (const TemplateURL* url : service_->GetTemplateURLs()) {
+      if (url->url_ref().GetHost(SearchTermsData()) == host_) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // TemplateURLServiceObserver:
+  void OnTemplateURLServiceChanged() override {
+    if (HasTemplateURLForHost()) {
+      run_loop_.Quit();
+    }
+  }
+
+  raw_ptr<TemplateURLService> service_;
+  std::string host_;
+  base::RunLoop run_loop_;
+};
 
 }  // namespace
 
@@ -261,26 +296,26 @@ IN_PROC_BROWSER_TEST_F(BraveSearchTest, CheckForAnUndefinedFunction) {
   EXPECT_EQ(base::Value(false), result_first);
 }
 
-// TODO(https://github.com/brave/brave-browser/issues/29631): Test flaky on
-// master for the mac and linux build.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-#define MAYBE_DefaultAPIVisibleKnownHost DISABLED_DefaultAPIVisibleKnownHost
-#else
-#define MAYBE_DefaultAPIVisibleKnownHost DefaultAPIVisibleKnownHost
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-IN_PROC_BROWSER_TEST_F(BraveSearchTestEnabled,
-                       MAYBE_DefaultAPIVisibleKnownHost) {
+IN_PROC_BROWSER_TEST_F(BraveSearchTestEnabled, DefaultAPIVisibleKnownHost) {
   // Opensearch providers are only allowed in the root of a site,
   // See SearchEngineTabHelper::GenerateKeywordFromNavigationEntry.
   GURL url = https_server()->GetURL(kAllowedDomain, "/");
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+  auto* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+
+  // Set up observer before navigation to catch the opensearch provider.
+  TemplateURLServiceHostObserver observer(template_url_service, kAllowedDomain);
+
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WaitForLoadStop(contents);
   EXPECT_EQ(url, contents->GetURL());
   EXPECT_EQ(true, content::EvalJs(contents, kScriptDefaultAPIExists));
+
+  // Wait for the opensearch provider to be added before checking.
+  observer.Wait();
   EXPECT_EQ(true, content::EvalJs(contents, kScriptDefaultAPIGetValue));
 }
 
