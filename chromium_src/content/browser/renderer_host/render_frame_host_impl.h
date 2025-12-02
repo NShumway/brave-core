@@ -20,7 +20,10 @@
   std::optional<base::UnguessableToken> ephemeral_storage_token_;     \
   bool ephemeral_storage_token_set_ = false;                          \
   void SetEphemeralStorageToken(const url::Origin& top_frame_origin); \
-  std::optional<base::UnguessableToken> GetEphemeralStorageToken() const
+  std::optional<base::UnguessableToken> GetEphemeralStorageToken() const; \
+  void OnContextMenuBlockedBySite(                                    \
+      const url::Origin& origin,                                      \
+      OnContextMenuBlockedBySiteCallback callback) override
 
 #define BindTrustTokenQueryAnswerer(...)    \
   BindTrustTokenQueryAnswerer(__VA_ARGS__); \

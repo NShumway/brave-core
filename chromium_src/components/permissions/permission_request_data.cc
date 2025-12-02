@@ -26,6 +26,8 @@ std::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists_BraveImpl(
       return RequestType::kBraveOpenAIChat;
     case ContentSettingsType::BRAVE_CARDANO:
       return RequestType::kBraveCardano;
+    case ContentSettingsType::BRAVE_CONTEXT_MENU:
+      return RequestType::kBraveContextMenu;
     default:
       return ContentSettingsTypeToRequestTypeIfExists(content_settings_type);
   }

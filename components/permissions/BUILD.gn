@@ -8,7 +8,9 @@ source_set("unit_tests") {
 
   sources = [
     "permission_expirations_unittest.cc",
+    "permission_util_unittest.cc",
     "permissions_client_unittest.cc",
+    "request_type_unittest.cc",
   ]
 
   deps = [

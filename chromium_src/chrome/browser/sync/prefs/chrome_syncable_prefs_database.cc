@@ -47,6 +47,9 @@ enum {
   kProfileContentSettingsPartitionedExceptionsFingerprintingV2 = 300027,
   kProfileContentSettingsPartitionedExceptionsBraveShields = 300028,
   kProfileContentSettingsPartitionedExceptionsBraveSpeedreader = 300029,
+  kProfileContentSettingsExceptionsBraveContextMenu = 300030,
+  kProfileDefaultContentSettingValuesBraveContextMenu = 300031,
+  kProfileContentSettingsPartitionedExceptionsBraveContextMenu = 300032,
 };
 }  // namespace brave_syncable_prefs_ids
 
@@ -195,6 +198,21 @@ const auto& BraveSyncablePreferences() {
       {"profile.content_settings.partitioned_exceptions.trackers",
        {brave_syncable_prefs_ids::
             kProfileContentSettingsPartitionedExceptionsTrackers,
+        syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
+        sync_preferences::MergeBehavior::kMergeableDict}},
+      {"profile.content_settings.exceptions.brave_context_menu",
+       {brave_syncable_prefs_ids::
+            kProfileContentSettingsExceptionsBraveContextMenu,
+        syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
+        sync_preferences::MergeBehavior::kMergeableDict}},
+      {"profile.default_content_setting_values.brave_context_menu",
+       {brave_syncable_prefs_ids::
+            kProfileDefaultContentSettingValuesBraveContextMenu,
+        syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
+        sync_preferences::MergeBehavior::kNone}},
+      {"profile.content_settings.partitioned_exceptions.brave_context_menu",
+       {brave_syncable_prefs_ids::
+            kProfileContentSettingsPartitionedExceptionsBraveContextMenu,
         syncer::PREFERENCES, sync_preferences::PrefSensitivity::kNone,
         sync_preferences::MergeBehavior::kMergeableDict}},
   });

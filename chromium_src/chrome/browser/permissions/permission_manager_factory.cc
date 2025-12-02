@@ -8,6 +8,7 @@
 #include "brave/browser/geolocation/brave_geolocation_permission_context_delegate.h"
 #include "brave/browser/permissions/permission_lifetime_manager_factory.h"
 #include "brave/components/permissions/brave_permission_manager.h"
+#include "brave/components/permissions/contexts/brave_context_menu_permission_context.h"
 #include "brave/components/permissions/contexts/brave_google_sign_in_permission_context.h"
 #include "brave/components/permissions/contexts/brave_localhost_permission_context.h"
 #include "brave/components/permissions/contexts/brave_open_ai_chat_permission_context.h"
@@ -48,6 +49,8 @@ PermissionManagerFactory::BuildServiceInstanceForBrowserContext(
       std::make_unique<permissions::BraveLocalhostPermissionContext>(profile);
   permission_contexts[ContentSettingsType::BRAVE_OPEN_AI_CHAT] =
       std::make_unique<permissions::BraveOpenAIChatPermissionContext>(profile);
+  permission_contexts[ContentSettingsType::BRAVE_CONTEXT_MENU] =
+      std::make_unique<permissions::BraveContextMenuPermissionContext>(profile);
 
   if (base::FeatureList::IsEnabled(
           permissions::features::kPermissionLifetime)) {

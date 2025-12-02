@@ -7,9 +7,40 @@ module blink.mojom;
 
 import "skia/public/mojom/bitmap.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "url/mojom/origin.mojom";
 
 [BraveExtend]
 interface LocalFrame {
   GetImageAt(gfx.mojom.Point window_point)
       => (skia.mojom.BitmapN32? bitmap_image);
+
+  // Updates the cached context menu content setting for a specific origin.
+  // Called by the browser when the user changes the setting via Page Info
+  // or chrome://settings so the change takes effect without page reload.
+  UpdateContextMenuContentSetting(url.mojom.Origin origin,
+                                  ContextMenuContentSetting setting);
+};
+
+// Content setting values for context menu permission.
+// Maps to ContentSetting enum values.
+[BraveAdd]
+enum ContextMenuContentSetting {
+  kAsk = 0,            // Show permission prompt (maps to CONTENT_SETTING_DEFAULT)
+  kAllowHiding = 1,    // Allow site to hide native context menu
+  kDisallowHiding = 2, // Disallow hiding - always show native context menu
+};
+
+// Extension to LocalFrameHost for notifying the browser when a site blocks
+// the context menu via preventDefault().
+[BraveExtend]
+interface LocalFrameHost {
+  // Called when a site blocks the context menu event via preventDefault().
+  // The browser will check content settings and potentially show a permission
+  // prompt asking the user whether to allow or block the site from hiding
+  // the native context menu.
+  //
+  // Returns the current content setting for the origin so the renderer can
+  // cache it for future context menu events.
+  OnContextMenuBlockedBySite(url.mojom.Origin origin)
+      => (ContextMenuContentSetting setting);
 };

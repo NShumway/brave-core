@@ -12,8 +12,11 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
 #include "brave/components/brave_shields/core/common/brave_shields.mojom.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -30,6 +33,7 @@ namespace brave_shields {
 class BraveShieldsWebContentsObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<BraveShieldsWebContentsObserver>,
+      public content_settings::Observer,
       public brave_shields::mojom::BraveShieldsHost {
  public:
   explicit BraveShieldsWebContentsObserver(content::WebContents*);
@@ -69,12 +73,19 @@ class BraveShieldsWebContentsObserver
   // content::WebContentsObserver overrides.
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void WebContentsDestroyed() override;
 
   // brave_shields::mojom::BraveShieldsHost.
   void OnJavaScriptBlocked(const std::u16string& details) override;
   void OnJavaScriptAllowedOnce(const std::u16string& details) override;
   void OnWebcompatFeatureInvoked(
       ContentSettingsType webcompat_settings_type) override;
+
+  // content_settings::Observer:
+  void OnContentSettingChanged(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsTypeSet content_type_set) override;
 
  private:
   friend class content::WebContentsUserData<BraveShieldsWebContentsObserver>;
@@ -102,6 +113,9 @@ class BraveShieldsWebContentsObserver
 
   content::RenderFrameHostReceiverSet<brave_shields::mojom::BraveShieldsHost>
       receivers_;
+
+  base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
+      content_settings_observation_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

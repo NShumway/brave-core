@@ -23,6 +23,7 @@
   case PermissionType::BRAVE_LOCALHOST_ACCESS:          \
   case PermissionType::BRAVE_OPEN_AI_CHAT:              \
   case PermissionType::BRAVE_CARDANO:                   \
+  case PermissionType::BRAVE_CONTEXT_MENU:              \
   case PermissionType::NUM
 
 namespace android_webview {

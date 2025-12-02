@@ -1,0 +1,12 @@
+diff --git a/third_party/blink/renderer/core/dom/events/event_dispatcher.cc b/third_party/blink/renderer/core/dom/events/event_dispatcher.cc
+index 74b89236b302f80bcfe25400927b1ff4ab0b84ed..0000000000000000000000000000000000000000 100644
+--- a/third_party/blink/renderer/core/dom/events/event_dispatcher.cc
++++ b/third_party/blink/renderer/core/dom/events/event_dispatcher.cc
+@@ -425,6 +425,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
+       }
+     }
+   } else {
++    BRAVE_DISPATCH_EVENT_POST_PROCESS_CHECK_CONTEXT_MENU
+ #if BUILDFLAG(IS_MAC)
+     // If a keypress event is prevented, the cursor position may be out of
+     // sync as RenderWidgetHostViewCocoa::insertText assumes that the text

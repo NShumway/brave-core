@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Context Menu Selective Block Test</title>
+  <style>
+    .block-area {
+      padding: 30px;
+      margin: 10px 0;
+      background: #ffcccc;
+    }
+    .allow-area {
+      padding: 30px;
+      margin: 10px 0;
+      background: #ccffcc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Selective Context Menu Block</h1>
+  <p>This page blocks context menu only on specific elements.</p>
+
+  <div id="blocked-div" class="block-area">
+    BLOCKED: Right-click blocked here
+  </div>
+
+  <div id="allowed-div" class="allow-area">
+    ALLOWED: Context menu allowed here
+  </div>
+
+  <div id="blocked-input-area" class="block-area">
+    BLOCKED: <input id="blocked-input" type="text" placeholder="Right-click blocked" style="width: 200px;">
+  </div>
+
+  <div id="allowed-input-area" class="allow-area">
+    ALLOWED: <input id="allowed-input" type="text" placeholder="Context menu allowed" style="width: 200px;">
+  </div>
+
+  <canvas id="blocked-canvas" width="200" height="100" class="block-area" style="display: block;">
+    BLOCKED: Canvas with blocked context menu
+  </canvas>
+
+  <script>
+    // Block context menu only on specific elements
+    document.getElementById('blocked-div').addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      console.log('Blocked on div');
+    });
+
+    document.getElementById('blocked-input').addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      console.log('Blocked on input');
+    });
+
+    document.getElementById('blocked-canvas').addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      console.log('Blocked on canvas');
+    });
+
+    // allowed-div and allowed-input do NOT have contextmenu handlers
+    // so the browser's native context menu should work there
+  </script>
+</body>
+</html>

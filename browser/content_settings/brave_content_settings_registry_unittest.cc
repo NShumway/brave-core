@@ -95,6 +95,7 @@ TEST_F(BraveContentSettingsRegistryTest, Inheritance) {
       ContentSettingsType::BRAVE_GOOGLE_SIGN_IN,
       ContentSettingsType::BRAVE_HTTPS_UPGRADE,
       ContentSettingsType::BRAVE_REMEMBER_1P_STORAGE,
+      ContentSettingsType::BRAVE_CONTEXT_MENU,
       ContentSettingsType::BRAVE_WEBCOMPAT_NONE,
       ContentSettingsType::BRAVE_WEBCOMPAT_AUDIO,
       ContentSettingsType::BRAVE_WEBCOMPAT_CANVAS,
@@ -231,6 +232,74 @@ TEST_F(BraveContentSettingsRegistryTest, GetInitialDefaultSetting) {
     EXPECT_EQ(ws_info->initial_default_value(),
               brave_shields::AutoShredSetting::DefaultValue());
   }
+
+  {
+    SCOPED_TRACE("Content setting: BRAVE_CONTEXT_MENU");
+    info = registry()->Get(ContentSettingsType::BRAVE_CONTEXT_MENU);
+    EXPECT_EQ(CONTENT_SETTING_ASK, info->GetInitialDefaultSetting());
+  }
+}
+
+// Test that BRAVE_CONTEXT_MENU is registered correctly in the registry
+TEST_F(BraveContentSettingsRegistryTest, ContextMenuRegistered) {
+  const ContentSettingsInfo* info =
+      registry()->Get(ContentSettingsType::BRAVE_CONTEXT_MENU);
+  ASSERT_TRUE(info) << "BRAVE_CONTEXT_MENU should be registered";
+
+  // Verify website settings info
+  const WebsiteSettingsInfo* website_settings_info =
+      info->website_settings_info();
+  ASSERT_TRUE(website_settings_info);
+  EXPECT_EQ("brave_context_menu", website_settings_info->name());
+}
+
+// Test that BRAVE_CONTEXT_MENU has correct valid settings
+TEST_F(BraveContentSettingsRegistryTest, ContextMenuValidSettings) {
+  const ContentSettingsInfo* info =
+      registry()->Get(ContentSettingsType::BRAVE_CONTEXT_MENU);
+  ASSERT_TRUE(info);
+
+  // ALLOW, BLOCK, and ASK should be valid settings
+  EXPECT_TRUE(info->IsSettingValid(CONTENT_SETTING_ALLOW));
+  EXPECT_TRUE(info->IsSettingValid(CONTENT_SETTING_BLOCK));
+  EXPECT_TRUE(info->IsSettingValid(CONTENT_SETTING_ASK));
+
+  // SESSION_ONLY should not be valid
+  EXPECT_FALSE(info->IsSettingValid(CONTENT_SETTING_SESSION_ONLY));
+}
+
+// Test that BRAVE_CONTEXT_MENU is syncable and inherits in incognito
+TEST_F(BraveContentSettingsRegistryTest, ContextMenuSyncAndIncognito) {
+  const ContentSettingsInfo* info =
+      registry()->Get(ContentSettingsType::BRAVE_CONTEXT_MENU);
+  ASSERT_TRUE(info);
+
+  // Check incognito behavior - should inherit
+  EXPECT_EQ(ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+            info->incognito_behavior());
+
+  // Check that it's registered in website settings registry
+  const WebsiteSettingsInfo* ws_info =
+      website_settings_registry()->Get(ContentSettingsType::BRAVE_CONTEXT_MENU);
+  ASSERT_TRUE(ws_info);
+
+  // On desktop it should be syncable
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  EXPECT_EQ(user_prefs::PrefRegistrySyncable::SYNCABLE_PREF,
+            ws_info->GetPrefRegistrationFlags());
+#endif
+}
+
+// Test that BRAVE_CONTEXT_MENU works on all platforms
+TEST_F(BraveContentSettingsRegistryTest, ContextMenuAllPlatforms) {
+  const ContentSettingsInfo* info =
+      registry()->Get(ContentSettingsType::BRAVE_CONTEXT_MENU);
+  ASSERT_TRUE(info);
+
+  // Verify the setting is registered (present on current platform)
+  // This test simply verifies the type is accessible on whatever platform
+  // the test is running on
+  EXPECT_TRUE(info->website_settings_info() != nullptr);
 }
 
 }  // namespace content_settings

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Context Menu Nested Iframes Test</title>
+</head>
+<body>
+  <h1>Parent Page (Level 0)</h1>
+  <p>This page has nested iframes to test multi-level context menu permission handling.</p>
+  <div id="parent-area" style="padding: 20px; background: #e0e0e0; margin-bottom: 10px;">
+    Right-click here on parent page
+  </div>
+  <iframe id="level1-iframe" width="500" height="300" style="border: 2px solid #999;"></iframe>
+  <script>
+    // The level1 iframe src will be set by the test to load context_menu_iframe_level1.html
+    // which itself contains another iframe for level 2
+  </script>
+</body>
+</html>

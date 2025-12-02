@@ -57,7 +57,8 @@
   {ContentSettingsType::BRAVE_WEBCOMPAT_ALL, nullptr}, \
   {ContentSettingsType::BRAVE_SHIELDS_METADATA, nullptr}, \
   {ContentSettingsType::BRAVE_CARDANO, "cardano"}, \
-  {ContentSettingsType::BRAVE_PSST, nullptr},
+  {ContentSettingsType::BRAVE_PSST, nullptr}, \
+  {ContentSettingsType::BRAVE_CONTEXT_MENU, "contextMenu"},
 // clang-format on
 
 #define BRAVE_SITE_SETTINGS_HELPER_CONTENT_SETTINGS_TYPE_FROM_GROUP_NAME \
@@ -132,6 +133,9 @@ bool HasRegisteredGroupName(ContentSettingsType type) {
   if (type == ContentSettingsType::BRAVE_SHIELDS) {
     return true;
   }
+  if (type == ContentSettingsType::BRAVE_CONTEXT_MENU) {
+    return true;
+  }
   return HasRegisteredGroupName_ChromiumImpl(type);
 }
 
@@ -145,6 +149,7 @@ std::vector<ContentSettingsType> GetVisiblePermissionCategories(
   types.push_back(ContentSettingsType::BRAVE_GOOGLE_SIGN_IN);
   types.push_back(ContentSettingsType::BRAVE_LOCALHOST_ACCESS);
   types.push_back(ContentSettingsType::BRAVE_OPEN_AI_CHAT);
+  types.push_back(ContentSettingsType::BRAVE_CONTEXT_MENU);
 
   // Only add Web3-related content settings if wallet is allowed
   if (brave_wallet::IsAllowedForContext(profile)) {

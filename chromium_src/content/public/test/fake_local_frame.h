@@ -8,9 +8,12 @@
 
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 
-#define UpdatePrerenderURL                                                  \
-  GetImageAt(const ::gfx::Point& window_point, GetImageAtCallback callback) \
-      override;                                                             \
+#define UpdatePrerenderURL                                                     \
+  GetImageAt(const ::gfx::Point& window_point, GetImageAtCallback callback)    \
+      override;                                                                \
+  void UpdateContextMenuContentSetting(                                        \
+      const ::url::Origin& origin,                                             \
+      ::blink::mojom::ContextMenuContentSetting setting) override;             \
   void UpdatePrerenderURL
 
 #include <content/public/test/fake_local_frame.h>  // IWYU pragma: export
