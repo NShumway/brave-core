@@ -14,4 +14,10 @@ void FakeLocalFrame::GetImageAt(const ::gfx::Point& window_point,
   std::move(callback).Run(SkBitmap());
 }
 
+void FakeLocalFrame::UpdateContextMenuContentSetting(
+    const ::url::Origin& origin,
+    ::blink::mojom::ContextMenuContentSetting setting) {
+  // No-op for tests.
+}
+
 }  // namespace content

@@ -29,14 +29,17 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "url/origin.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "brave/browser/brave_shields/brave_shields_tab_helper.h"
@@ -73,7 +76,13 @@ BraveShieldsWebContentsObserver::BraveShieldsWebContentsObserver(
     : WebContentsObserver(web_contents),
       content::WebContentsUserData<BraveShieldsWebContentsObserver>(
           *web_contents),
-      receivers_(web_contents, this) {}
+      receivers_(web_contents, this) {
+  // Register to observe content settings changes for live permission updates.
+  if (auto* map = HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+    content_settings_observation_.Observe(map);
+  }
+}
 
 bool BraveShieldsWebContentsObserver::IsBlockedSubresource(
     const std::string& subresource) {
@@ -271,6 +280,79 @@ void BraveShieldsWebContentsObserver::ReadyToCommitNavigation(
   }
 
   SendShieldsSettings(navigation_handle);
+}
+
+void BraveShieldsWebContentsObserver::WebContentsDestroyed() {
+  content_settings_observation_.Reset();
+}
+
+void BraveShieldsWebContentsObserver::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsTypeSet content_type_set) {
+  // Only handle BRAVE_CONTEXT_MENU setting changes.
+  if (!content_type_set.Contains(ContentSettingsType::BRAVE_CONTEXT_MENU)) {
+    return;
+  }
+
+  // Early exit if web_contents is gone or not valid.
+  if (!web_contents() || !web_contents()->GetPrimaryMainFrame()) {
+    return;
+  }
+
+  // Check if the pattern matches the current page URL.
+  const GURL& url = web_contents()->GetLastCommittedURL();
+  if (url.is_empty() || !url.is_valid() || !primary_pattern.Matches(url)) {
+    return;
+  }
+
+  // Get the current setting for this origin.
+  auto* browser_context = web_contents()->GetBrowserContext();
+  if (!browser_context) {
+    return;
+  }
+  auto* map = HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+  if (!map) {
+    return;
+  }
+
+  url::Origin origin = url::Origin::Create(url);
+  if (origin.opaque()) {
+    return;
+  }
+
+  ContentSetting setting =
+      map->GetContentSetting(url, url, ContentSettingsType::BRAVE_CONTEXT_MENU);
+
+  // Convert ContentSetting to mojo enum.
+  blink::mojom::ContextMenuContentSetting mojo_setting;
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+      mojo_setting = blink::mojom::ContextMenuContentSetting::kAllowHiding;
+      break;
+    case CONTENT_SETTING_BLOCK:
+      mojo_setting = blink::mojom::ContextMenuContentSetting::kDisallowHiding;
+      break;
+    default:
+      mojo_setting = blink::mojom::ContextMenuContentSetting::kAsk;
+      break;
+  }
+
+  // Send the updated setting to all frames in this WebContents.
+  // Only send to frames that are alive and have a live RenderFrame.
+  web_contents()->GetPrimaryMainFrame()->ForEachRenderFrameHost(
+      [&origin, mojo_setting](RenderFrameHost* rfh) {
+        if (!rfh || !rfh->IsRenderFrameLive()) {
+          return;
+        }
+        // Use the existing cached LocalFrame remote. Creating a new binding
+        // via GetRemoteAssociatedInterfaces()->GetInterface() would crash
+        // because the LocalFrame receiver is already bound.
+        auto* rfhi = static_cast<content::RenderFrameHostImpl*>(rfh);
+        rfhi->GetAssociatedLocalFrame()->UpdateContextMenuContentSetting(
+            origin, mojo_setting);
+      });
 }
 
 void BraveShieldsWebContentsObserver::BlockAllowedScripts(

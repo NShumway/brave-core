@@ -198,6 +198,17 @@ RegisterPolymerComponentReplacement(
                 lists.permissionsAdvanced.splice(currentIndex, 0, cardanoItem)
               }
             }
+            // Context Menu permission - always available
+            currentIndex++
+            const contextMenuItem = {
+              route: routes.SITE_SETTINGS_CONTEXT_MENU,
+              id: ContentSettingsTypes.CONTEXT_MENU,
+              label: 'siteSettingsContextMenu',
+              icon: 'settings:assignment',
+              enabledLabel: 'siteSettingsContextMenuAsk',
+              disabledLabel: 'siteSettingsContextMenuBlock'
+            }
+            lists.permissionsAdvanced.splice(currentIndex, 0, contextMenuItem)
           }
         }
         (lists as any).shieldsBasic = [

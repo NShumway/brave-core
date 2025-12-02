@@ -8,9 +8,12 @@
 
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 
-#define CopyImageAt                                                       \
-  GetImageAt(const gfx::Point& window_point, GetImageAtCallback callback) \
-      final;                                                              \
+#define CopyImageAt                                                           \
+  GetImageAt(const gfx::Point& window_point, GetImageAtCallback callback)     \
+      final;                                                                  \
+  void UpdateContextMenuContentSetting(                                       \
+      const scoped_refptr<const blink::SecurityOrigin>& origin,               \
+      mojom::blink::ContextMenuContentSetting setting) final;                 \
   void CopyImageAt
 
 #include <third_party/blink/renderer/core/frame/local_frame_mojo_handler.h>  // IWYU pragma: export

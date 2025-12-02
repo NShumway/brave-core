@@ -14,6 +14,7 @@ import { loadTimeData } from "../i18n_setup.js"
 import { pageVisibility } from './page_visibility.js'
 import '../brave_survey_panelist_page/brave_survey_panelist_page.js'
 import '../site_settings/site_settings_autoplay.js'
+import '../site_settings/site_settings_context_menu.js'
 import '../site_settings/site_settings_localhost.js'
 import '../site_settings/site_settings_cardano.js'
 import '../site_settings/site_settings_ethereum.js'
@@ -127,6 +128,15 @@ RegisterPolymerTemplateModifications({
           slot="view"
           in-search-mode="[[inSearchMode_]]">
         </site-settings-autoplay-page>`)
+
+    viewManager.appendChild(html`
+      <site-settings-context-menu-page
+          id="${ContentSettingsTypes.CONTEXT_MENU}"
+          route-path$="[[routes_.SITE_SETTINGS_CONTEXT_MENU.path]]"
+          data-parent-view-id="siteSettings"
+          slot="view"
+          in-search-mode="[[inSearchMode_]]">
+        </site-settings-context-menu-page>`)
 
     if (loadTimeData.getBoolean('isLocalhostAccessFeatureEnabled')) {
       viewManager.appendChild(html`

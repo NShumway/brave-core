@@ -6,7 +6,6 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
 #include "base/check.h"
-#include "base/logging.h"
 
 #define BRAVE_RENDER_FRAME_HOST_IMPL_COMPUTE_ISOLATION_INFO_INTERNAL \
   SetEphemeralStorageToken(top_frame_origin);
@@ -83,6 +82,43 @@ void RenderFrameHostImpl::BindTrustTokenQueryAnswerer(
       "Attempted to get a TrustTokenQueryAnswerer with Private State Tokens "
       "disabled.");
   return;
+}
+
+void RenderFrameHostImpl::OnContextMenuBlockedBySite(
+    const url::Origin& origin,
+    OnContextMenuBlockedBySiteCallback callback) {
+  // SECURITY: Validate the origin from renderer matches the frame's committed
+  // origin. A compromised renderer could try to spoof origins to manipulate
+  // permissions for other sites.
+  if (origin != GetLastCommittedOrigin()) {
+    mojo::ReportBadMessage(
+        "BRAVE_CONTEXT_MENU: Origin mismatch - renderer sent different origin "
+        "than frame's committed origin");
+    // Still call callback to avoid hanging the renderer, but return
+    // kDisallowHiding (safest default - shows native menu).
+    std::move(callback).Run(
+        blink::mojom::ContextMenuContentSetting::kDisallowHiding);
+    return;
+  }
+
+  // Skip local files (file://) - their origins don't save reliably to content
+  // settings. Return kAllowHiding to let sites show custom menus (matches
+  // renderer).
+  if (GetLastCommittedURL().SchemeIsFile()) {
+    std::move(callback).Run(
+        blink::mojom::ContextMenuContentSetting::kAllowHiding);
+    return;
+  }
+
+  // Delegate to the content client to handle this permission request.
+  // The browser-side implementation will check content settings and
+  // potentially show a permission prompt.
+  GetContentClient()->browser()->OnContextMenuBlockedBySite(this, origin);
+
+  // Return the current content setting so the renderer can cache it.
+  auto setting = GetContentClient()->browser()->GetContextMenuContentSetting(
+      GetBrowserContext(), origin);
+  std::move(callback).Run(setting);
 }
 
 }  // namespace content

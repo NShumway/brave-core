@@ -8,9 +8,9 @@
 
 class SkBitmap;
 
-#define CopyImageAt                                                   \
-  GetImageAt(int x, int y,                                            \
-             base::OnceCallback<void(const SkBitmap&)> callback) = 0; \
+#define CopyImageAt                                                        \
+  GetImageAt(int x, int y,                                                 \
+             base::OnceCallback<void(const SkBitmap&)> callback) = 0;      \
   virtual void CopyImageAt
 
 #include <content/public/browser/render_frame_host.h>  // IWYU pragma: export

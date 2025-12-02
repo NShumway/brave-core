@@ -1,0 +1,15 @@
+<!-- Copyright (c) 2025 The Brave Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<settings-subpage
+  page-title="$i18n{siteSettingsContextMenu}">
+  <settings-category-default-radio-group id="contextMenuDefault" category="[[contentSettingsTypesEnum_.CONTEXT_MENU]]"
+    block-option-label="$i18n{siteSettingsContextMenuBlock}" allow-option-label="$i18n{siteSettingsContextMenuAsk}" allow-option-icon="settings:assignment"
+    block-option-icon="settings:assignment">
+  </settings-category-default-radio-group>
+  <category-setting-exceptions id="contextMenuExceptions" category="[[contentSettingsTypesEnum_.CONTEXT_MENU]]"
+    block-header="$i18n{siteSettingsBlock}" allow-header="$i18n{siteSettingsAllow}">
+  </category-setting-exceptions>
+</settings-subpage>

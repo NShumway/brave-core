@@ -7,11 +7,25 @@
 
 namespace blink {
 
+// Defined in event_dispatcher.cc
+void UpdateContextMenuSettingCache(
+    const std::string& origin,
+    mojom::blink::ContextMenuContentSetting setting);
+
 void LocalFrameMojoHandler::GetImageAt(const gfx::Point& window_point,
                                        GetImageAtCallback callback) {
   gfx::Point viewport_position =
       frame_->GetWidgetForLocalRoot()->DIPsToRoundedBlinkSpace(window_point);
   std::move(callback).Run(frame_->GetImageAtViewportPoint(viewport_position));
+}
+
+void LocalFrameMojoHandler::UpdateContextMenuContentSetting(
+    const scoped_refptr<const SecurityOrigin>& origin,
+    mojom::blink::ContextMenuContentSetting setting) {
+  if (!origin || origin->IsOpaque()) {
+    return;
+  }
+  UpdateContextMenuSettingCache(origin->ToString().Utf8(), setting);
 }
 
 }  // namespace blink

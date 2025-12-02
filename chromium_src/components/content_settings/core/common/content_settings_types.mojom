@@ -54,4 +54,7 @@ enum ContentSettingsType {
 
   BRAVE_CARDANO,
   BRAVE_PSST,
+  // Permission to allow sites to hide/customize the browser's native context
+  // menu. BLOCK = force native menu, ALLOW = site can customize, ASK = prompt.
+  BRAVE_CONTEXT_MENU,
 };

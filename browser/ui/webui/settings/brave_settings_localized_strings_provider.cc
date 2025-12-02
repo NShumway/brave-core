@@ -132,6 +132,13 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
       {"siteSettingsAutoplayAllow", IDS_SETTINGS_SITE_SETTINGS_AUTOPLAY_ALLOW},
       {"siteSettingsAutoplayBlock", IDS_SETTINGS_SITE_SETTINGS_AUTOPLAY_BLOCK},
 
+      {"siteSettingsContextMenu", IDS_SETTINGS_SITE_SETTINGS_CONTEXT_MENU},
+      {"siteSettingsCategoryContextMenu",
+       IDS_SETTINGS_SITE_SETTINGS_CONTEXT_MENU},
+      {"siteSettingsContextMenuAsk", IDS_SETTINGS_SITE_SETTINGS_CONTEXT_MENU_ASK},
+      {"siteSettingsContextMenuBlock",
+       IDS_SETTINGS_SITE_SETTINGS_CONTEXT_MENU_BLOCK},
+
       {"siteSettingsEthereum", IDS_SETTINGS_SITE_SETTINGS_ETHEREUM},
       {"siteSettingsCategoryEthereum", IDS_SETTINGS_SITE_SETTINGS_ETHEREUM},
       {"siteSettingsEthereumAsk", IDS_SETTINGS_SITE_SETTINGS_ETHEREUM_ASK},

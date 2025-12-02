@@ -80,6 +80,7 @@
 #include "brave/components/constants/webui_url_constants.h"
 #include "brave/components/cosmetic_filters/browser/cosmetic_filters_resources.h"
 #include "brave/components/cosmetic_filters/common/cosmetic_filters.mojom.h"
+#include "brave/components/context_menu/core/common/default_allowlist.h"
 #include "brave/components/de_amp/browser/de_amp_body_handler.h"
 #include "brave/components/debounce/content/browser/debounce_navigation_throttle.h"
 #include "brave/components/decentralized_dns/content/decentralized_dns_navigation_throttle.h"
@@ -130,6 +131,9 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle_registry.h"
+#include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_descriptor_util.h"
+#include "content/public/browser/permission_request_description.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -149,6 +153,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -779,6 +784,82 @@ BraveContentBrowserClient::WorkerGetBraveShieldSettings(
       farbling_level, farbling_token, std::vector<std::string>(),
       brave_shields::IsReduceLanguageEnabledForProfile(pref_service),
       IsJsBlockingEnforced(browser_context, url));
+}
+
+void BraveContentBrowserClient::OnContextMenuBlockedBySite(
+    content::RenderFrameHost* render_frame_host,
+    const url::Origin& origin) {
+  DCHECK(render_frame_host);
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents) {
+    return;
+  }
+
+  // Check if this origin is in the default allowlist for legitimate custom
+  // context menus (Google Docs, Figma, Notion, etc.). If so, silently allow
+  // the site to block the context menu without prompting the user.
+  if (brave::context_menu::IsInDefaultAllowlist(origin.Serialize())) {
+    return;
+  }
+
+  auto* permission_controller =
+      web_contents->GetBrowserContext()->GetPermissionController();
+  if (!permission_controller) {
+    return;
+  }
+
+  // Request permission for the context menu blocking.
+  // Note: We pass the origin from the renderer (the iframe's origin where the
+  // context menu event occurred) as the requesting_origin. This ensures that
+  // permissions are stored per-iframe-origin, not per-main-frame-origin.
+  //
+  // The renderer's cache will be updated via the async IPC callback - we don't
+  // need to push the setting here.
+  permission_controller->RequestPermissionsFromCurrentDocument(
+      render_frame_host,
+      content::PermissionRequestDescription(
+          content::PermissionDescriptorUtil::
+              CreatePermissionDescriptorForPermissionType(
+                  blink::PermissionType::BRAVE_CONTEXT_MENU),
+          /*user_gesture*/ true,
+          /*requesting_origin*/ origin.GetURL()),
+      base::DoNothing());
+}
+
+blink::mojom::ContextMenuContentSetting
+BraveContentBrowserClient::GetContextMenuContentSetting(
+    content::BrowserContext* browser_context,
+    const url::Origin& origin) {
+  // Opaque origins (data:, blob:, sandboxed iframes) cannot have persistent
+  // content settings. Return kAsk which will show native menu.
+  if (origin.opaque()) {
+    return blink::mojom::ContextMenuContentSetting::kAsk;
+  }
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile) {
+    return blink::mojom::ContextMenuContentSetting::kAsk;
+  }
+
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  if (!content_settings) {
+    return blink::mojom::ContextMenuContentSetting::kAsk;
+  }
+
+  ContentSetting setting = content_settings->GetContentSetting(
+      origin.GetURL(), origin.GetURL(),
+      ContentSettingsType::BRAVE_CONTEXT_MENU);
+
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+      return blink::mojom::ContextMenuContentSetting::kAllowHiding;
+    case CONTENT_SETTING_BLOCK:
+      return blink::mojom::ContextMenuContentSetting::kDisallowHiding;
+    default:
+      return blink::mojom::ContextMenuContentSetting::kAsk;
+  }
 }
 
 content::ContentBrowserClient::AllowWebBluetoothResult

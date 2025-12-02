@@ -7,6 +7,7 @@
 #define BRAVE_CHROMIUM_SRC_CONTENT_PUBLIC_BROWSER_CONTENT_BROWSER_CLIENT_H_
 
 #include "brave/components/brave_shields/core/common/shields_settings.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 
 // Brave-specific: allows the embedder to modify the referrer string
@@ -34,6 +35,10 @@
   virtual std::optional<GURL> SanitizeURL(content::RenderFrameHost*,         \
                                           const GURL&);                      \
   virtual bool IsWindowsRecallDisabled();                                    \
+  virtual void OnContextMenuBlockedBySite(                                   \
+      RenderFrameHost* render_frame_host, const url::Origin& origin) {}      \
+  virtual blink::mojom::ContextMenuContentSetting GetContextMenuContentSetting( \
+      BrowserContext* browser_context, const url::Origin& origin);           \
   virtual void SetBrowserStartupIsCompleteForTesting
 
 #include <content/public/browser/content_browser_client.h>  // IWYU pragma: export

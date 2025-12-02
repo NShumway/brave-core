@@ -22,21 +22,12 @@
 
 // `kWidevine` handled by an override in `WidevinePermissionRequest` and the
 // Brave Ethereum/Solana permission has its own permission request prompt.
-#if BUILDFLAG(IS_ANDROID)
-#define BRAVE_ENUM_ITEMS_FOR_SWITCH \
-  case RequestType::kBraveEthereum: \
-  case RequestType::kBraveSolana:   \
-  case RequestType::kBraveCardano:  \
-  case RequestType::kWidevine:      \
+#define BRAVE_ENUM_ITEMS_FOR_SWITCH   \
+  case RequestType::kBraveEthereum:   \
+  case RequestType::kBraveSolana:     \
+  case RequestType::kBraveCardano:    \
+  case RequestType::kWidevine:        \
     NOTREACHED();
-#else
-#define BRAVE_ENUM_ITEMS_FOR_SWITCH \
-  case RequestType::kBraveEthereum: \
-  case RequestType::kBraveSolana:   \
-  case RequestType::kBraveCardano:  \
-  case RequestType::kWidevine:      \
-    NOTREACHED();
-#endif
 
 // For permission strings that we also need on Android, we need to use
 // a string that has a placeholder ($1) in it.
@@ -50,6 +41,9 @@
     break;                                                 \
   case RequestType::kBraveOpenAIChat:                      \
     message_id = IDS_OPEN_AI_CHAT_PERMISSION_FRAGMENT;     \
+    break;                                                 \
+  case RequestType::kBraveContextMenu:                     \
+    message_id = IDS_CONTEXT_MENU_PERMISSION_FRAGMENT;     \
     break;
 
 #define BRAVE_ENUM_ITEMS_FOR_SWITCH_ANDROID          \
@@ -62,6 +56,9 @@
     break;                                           \
   case RequestType::kBraveOpenAIChat:                \
     message_id = IDS_OPEN_AI_CHAT_INFOBAR_TEXT;      \
+    break;                                           \
+  case RequestType::kBraveContextMenu:               \
+    message_id = IDS_CONTEXT_MENU_INFOBAR_TEXT;      \
     break;
 
 namespace {

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Context Menu Delayed Block Test</title>
+</head>
+<body>
+  <h1>Delayed Context Menu Block</h1>
+  <div id="delayed-area" style="padding: 50px; background: #f0f0f0; margin-bottom: 20px;">
+    Right-click here - handler added after delay
+  </div>
+  <div id="status">Handler not yet attached</div>
+  <script>
+    // Simulate a page that adds the contextmenu handler dynamically
+    // (e.g., after JavaScript framework initialization)
+    var attached = false;
+
+    function attachHandler() {
+      if (!attached) {
+        document.getElementById('delayed-area').addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          console.log('Context menu blocked by delayed handler');
+        });
+        document.getElementById('status').textContent = 'Handler attached';
+        attached = true;
+      }
+    }
+
+    // Attach handler after 500ms delay
+    setTimeout(attachHandler, 500);
+
+    // Also expose function for test to trigger immediately
+    window.attachContextMenuHandler = attachHandler;
+  </script>
+</body>
+</html>

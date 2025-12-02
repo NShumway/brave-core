@@ -4,6 +4,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "base/debug/dump_without_crashing.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 
 #include <content/public/browser/content_browser_client.cc>
 
@@ -51,6 +52,13 @@ std::optional<GURL> ContentBrowserClient::SanitizeURL(content::RenderFrameHost*,
 
 bool ContentBrowserClient::IsWindowsRecallDisabled() {
   return false;
+}
+
+blink::mojom::ContextMenuContentSetting
+ContentBrowserClient::GetContextMenuContentSetting(
+    BrowserContext* browser_context,
+    const url::Origin& origin) {
+  return blink::mojom::ContextMenuContentSetting::kAsk;
 }
 
 }  // namespace content

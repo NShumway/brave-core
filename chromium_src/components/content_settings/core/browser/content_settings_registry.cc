@@ -264,6 +264,20 @@ void ContentSettingsRegistry::BraveInit() {
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
            PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
 
+  // Register context menu permission default value as Ask.
+  // BLOCK = force native menu (block site from hiding it)
+  // ALLOW = site can hide/customize menu
+  // ASK = prompt user when site tries to hide menu
+  Register(ContentSettingsType::BRAVE_CONTEXT_MENU, "brave_context_menu",
+           CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE,
+           /*allowlisted_schemes=*/{},
+           /*valid_settings=*/
+           {CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK, CONTENT_SETTING_ASK},
+           WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::ALL_PLATFORMS,
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+           PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
+
   // Disable background sync by default (brave/brave-browser#4709)
   content_settings_info_.erase(ContentSettingsType::BACKGROUND_SYNC);
   permission_settings_registry_->Unregister(

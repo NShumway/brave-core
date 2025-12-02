@@ -118,6 +118,7 @@ export default function addBraveRoutes(r: Partial<SettingsRoutes>) {
       }
     }
     r.SITE_SETTINGS_SHIELDS_STATUS = r.SITE_SETTINGS.createChild('braveShields')
+    r.SITE_SETTINGS_CONTEXT_MENU = r.SITE_SETTINGS.createChild('contextMenu')
     if (r.SITE_SETTINGS_ADS) {
       delete r.SITE_SETTINGS_ADS
     } else {

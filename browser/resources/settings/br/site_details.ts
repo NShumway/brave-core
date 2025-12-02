@@ -62,6 +62,21 @@ RegisterPolymerTemplateModifications({
           'label', loadTimeData.getString('siteSettingsAutoplay'))
       }
       curChild++
+      // Context Menu permission
+      insertBefore(firstPermissionItem, html`<site-details-permission
+           category="[[contentSettingsTypesEnum_.CONTEXT_MENU]]"
+           icon="list-checks">
+         </site-details-permission>`)
+      const contextMenuSettings = templateContent.querySelector(
+        `div.list-frame > site-details-permission:nth-child(${curChild})`)
+      if (!contextMenuSettings) {
+        console.error('[Settings] Couldn\'t find context menu settings')
+      } else {
+        contextMenuSettings.setAttribute(
+          'label', loadTimeData.getString('siteSettingsContextMenu'))
+      }
+      curChild++
+
       // Google Sign-In feature
       const isGoogleSignInFeatureEnabled =
         loadTimeData.getBoolean('isGoogleSignInFeatureEnabled')

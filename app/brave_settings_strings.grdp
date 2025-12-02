@@ -911,6 +911,16 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOPLAY_BLOCK" desc="Label for autoplay site settings.">
     Block sites from autoplaying videos
   </message>
+  <!-- Context Menu -->
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CONTEXT_MENU" desc="Title for context menu site settings.">
+    Context Menu
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CONTEXT_MENU_ASK" desc="Label for context menu site settings ask group.">
+    Ask when a site wants to block the context menu
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CONTEXT_MENU_BLOCK" desc="Label for context menu site settings block group.">
+    Always show browser context menu on sites that try to block it
+  </message>
   <!-- Ethereum -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_ETHEREUM" desc="Title for ethereum site settings.">
     Ethereum

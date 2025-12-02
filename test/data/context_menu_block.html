@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Context Menu Block Test</title>
+</head>
+<body>
+  <div id="block-area" style="padding: 50px; background: #f0f0f0;">
+    Right-click here - context menu is blocked
+  </div>
+  <script>
+    document.getElementById('block-area').addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      console.log('Context menu blocked by site');
+    });
+  </script>
+</body>
+</html>

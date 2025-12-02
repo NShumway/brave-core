@@ -88,6 +88,14 @@ class BraveContentBrowserClient : public ChromeContentBrowserClient {
       const GURL& url,
       content::BrowserContext* browser_context) override;
 
+  void OnContextMenuBlockedBySite(
+      content::RenderFrameHost* render_frame_host,
+      const url::Origin& origin) override;
+
+  blink::mojom::ContextMenuContentSetting GetContextMenuContentSetting(
+      content::BrowserContext* browser_context,
+      const url::Origin& origin) override;
+
   content::ContentBrowserClient::AllowWebBluetoothResult AllowWebBluetooth(
       content::BrowserContext* browser_context,
       const url::Origin& requesting_origin,
